@@ -2,7 +2,7 @@
 
 ## Links
 * github.com/docker
-* github.com/javaee-samples/docker-java
+* Presentation, samples, etc: github.com/javaee-samples/docker-java
 
 ## About
 * create containers for software applications
@@ -348,3 +348,191 @@ Provides declarative primitive for the "desired state" of an application.
   * containers always run in a pod
   * assigned IPs are ephemeral
 * service: single, stable name for a set of pods, also acts as Load Balancer
+* label: used to organize and select group of objects
+  * everything gets a label
+  * labels are stored in etcd
+* replication controller: manages the lifecycle of pods and ensures specified number are running
+* node
+  * docker
+  * kubelet: talks with the master
+* master
+  * kubelet: talks with other kubelets
+  * single point of failure!
+
+### Master High Availability
+...
+
+### Kubernetes vs Docker Swarm
+Both are competitors!
+
+Comparison: https://github.com/javaee-samples/docker-java/blob/master/chapters/docker-vs-kubernetes.adoc
+
+Overall, Kubernetes wins for now
+
+### kubectl
+Script that controls the Kubernetes cluster manager.
+* get: `kubectl get pods` (or nodes)
+* get: `kubectl get services`
+* get: `kubectl get rc`
+* create: `kubectl create -f <filename>`
+
+`echo $KUBERNETES_PROVIDER` -> vagrant (easiest): vagrant creates VMs
+
+## Kubernetes config
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+    name: wildfly-pod
+    labels:
+        name: wildfly
+spec:
+    containers:
+        - image: jboss/wildfly
+        name: wildfly-pod
+        ports:
+            - containerPort: 8080 # port NOT exposed on the host
+```
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+    name: wildfly-pod
+    labels:
+        name: wildfly
+spec:
+    replicas: 2
+    template:
+        metadata:
+            labels:
+                name: wildfly
+        spec:
+            containers:
+                ...
+```
+
+`export KUBERNETES_PROVIDER=vagrant`
+
+Easily install Kubernetes: `get.k8s.io`
+
+A pod with one container:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+    name: wildfly-pod
+    labels:
+        name: wildfly
+    ...
+...
+```
+
+### Services
+Set of pods put together and exposed with a single IP. Helps with load balancing (simple TCP/UDP LB).
+
+Creates environment variables in other pods (like docker links but across hosts).
+
+Stable endpoint for pods to reference: IP address that doesn't change
+
+Creation:
+* node
+  * pod
+    * Docker (WildFly)
+  * pod
+    * Docker (MySQL)
+  * mysql service
+
+```
+...
+    labels:
+        name: mysql-pod
+        context: docker-k8s-lab
+```
+
+Usage to create service:
+
+```
+...
+    selector:
+        name: mysql-pod
+        context: docker-k8s-lab
+...
+```
+
+### Services across two nodes
+You cannot control whether pod x goes to node x or y. You can affect the location with affinity, etc but not assign directly to a node.
+
+### Replication controller
+Ensures that a specified number of pod "replicas" are running.
+* Pod templates are cookie cutters
+* rescheduling
+* manual or auto-scale replicas
+* rolling updates:
+  * suppose there is v1 of the app running
+  * and v2 on another
+  * scale down one side
+  * scale up the other side for the transition
+  * ...
+
+Recommended to wrap a Pod or Service in a Replication Controller (RC)
+
+By default, pods will always restart (it can be overridden).
+
+### Replication Controller Configuration
+...
+
+### Replication Controller
+Nothing but a resource.
+Suppose there are 3 nodes + the master with a replication controller.
+
+With the automatic rescheduling, if a node goes down, the RC will reschedule it to run elsewhere.
+
+`kubectl.sh scale --replicas=3 rc wildfly-rc`
+
+### Sample production deployment
+With 10 nodes having each 32 cores and 160GB they can run: 400 (normal) to 600 (peak) containers.
+
+### Health checks
+* restart a pod, if wrapped in a replication controller
+* application-level health checks (e.g. HTTP status codes, container exec, TCP socket alive, ...)
+* ...
+
+### Kubernetes using docker
+```
+etcd:
+    image: gcr.io/google_containers/etcd:2.0.9
+    net: "host"
+    entrypoint: /usr/local/bin/etcd --addr=127.0.0.1:4001 --bind-addr=0.0.0.0:4001 --data-dir=...
+master:
+    ...
+...
+```
+
+* Host OS
+  * Docker Machine
+    * Kubernetes (Docker Compose)
+      * etcd
+      * Master
+        * Pod
+          * container <--- woohoooo
+      * Proxy
+
+http://kubernetes.io/gettingstarted/
+
+Tip: use ELK (Elastic Search, LogStash, Kibana): https://www.elastic.co/webinars/introduction-elk-stack
+
+## Docker and Maven
+Build a Docker image using a specific Maven profile
+
+Link: https://github.com/javaee-samples/javaee7-docker-maven
+
+## Docker and IDE support
+* Eclipse: https://www.eclipse.org/community/eclipse_newsletter/2015/june/article3.php
+* IntelliJ: https://blog.jetbrains.com/idea/2015/03/docker-support-in-intellij-idea-14-1/
+  * Docker Integration plugin
+
+ ## Arquillian
+ Arquillian supports Docker (Arquillian Cube)
+
