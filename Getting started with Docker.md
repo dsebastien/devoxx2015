@@ -367,7 +367,9 @@ Both are competitors!
 
 Comparison: https://github.com/javaee-samples/docker-java/blob/master/chapters/docker-vs-kubernetes.adoc
 
-Overall, Kubernetes wins for now
+Overall, Kubernetes wins for now.
+
+Another solution is Mesos: targeted at larger scale deployments, but should be considered anyhow.
 
 ### kubectl
 Script that controls the Kubernetes cluster manager.
@@ -533,6 +535,19 @@ Link: https://github.com/javaee-samples/javaee7-docker-maven
 * IntelliJ: https://blog.jetbrains.com/idea/2015/03/docker-support-in-intellij-idea-14-1/
   * Docker Integration plugin
 
- ## Arquillian
+## Arquillian
  Arquillian supports Docker (Arquillian Cube)
 
+## Continuous Delivery using Docker and Jenkins workflow
+git push -> git server -> web hook or poll to jenkins
+Jenkins: check-out and build, run tests (e.g., using arquillian), create Docker image, push image to Docker registry, ...
+
+OpenShift v3 uses Docker and Kubernetes.
+
+Shippable can be used as a CI tool
+
+
+## Developer productivity
+Reduce impedence mismatch: works on my machine syndrome.
+
+Docker images can be used as basis of testing, issue troubleshooting, etc.
