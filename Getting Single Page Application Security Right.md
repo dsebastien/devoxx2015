@@ -12,6 +12,7 @@
 * to check: OWASP encoder
 * https://code.google.com/p/mustache-security/
 * https://distrinet.cs.kuleuven.be/research/publications/index.do?sortBy=member&memberID=u0055658
+* https://distrinet.cs.kuleuven.be/events/websecurity/#/resources
 
 ## Modern age
 * users are more vulnerable than ever
@@ -239,5 +240,123 @@ If you really really want raw trusted HTML...
 ...
 
 ## Content Security Policy (CSP)
+* CSP reduces the harm of content injection vulneratbilities
+* intended as a second line of defense
+* consists of a set of directives
+* delivered as an HTTP header by the server
+* enforced by compatible browsers
 
+Example:
+```
+Content-Security-Policy:
+    default-src 'self';
+```
 
+Started as a research paper by Mozilla:
+* aim to give admin control over appearance of site
+* aim to give users some confidence where data is sent to
+* even in presence of an attacker that controls content
+
+By default:
+* prevents resources from being loaded from non-whitelisted locations
+* ...
+
+Quick evolution:
+* addition of plugin types, sandbox, child contexts, form destinations, ...
+* additional spec adds UI security directives
+* deprecates X-FRAME-OPTION
+* ...
+
+Widely supported
+
+Chrome makes CSP mandatory for Chrome components
+
+Directives:
+...
+
+Reporting mode:
+* CSP can report violations back to the resource server
+* allows for fine-tuning of the CSP policy
+* gives insights into actual attacks
+
+Report-Only mode: Content-Security-Policy-Report-Only
+* no content will be blocked
+* warnings will be generated in console
+* if request-uri is specified, reports will be sent
+* great for testing before actual deployment
+
+## Lifting content restrictions in CSP
+* script-src and style-src support the lifting of restrictions by specifying unsafe-inline and unsafe-eval (not recommended)
+* CSP level 2 supports nonces and hashes
+
+## CSP and JS MVW Frameworks
+* default behavior of MVW frameworks is not CSP compatible (dependend on string-to-code functionality
+* requires unsave-eval in CSP
+
+However frameworks catch up quickly:
+* with angular: ng-app ng-csp
+  * slight performance overhead on the client
+
+## Cross-Origin Resource Sharing (CORS)
+
+### Resource sharing across origins
+...
+
+* denying access to the response protects sensitive data
+  * prevents an attacker from reading the user's data
+  * but data retrieval is a stateless operation
+  * ...
+* with CORS, plenty of security assumptions change
+  * access to the response of cross-origin GET requests used to be impossible
+  * Cross-origin PUT and DELETE requests used to be impossible
+  * cross-origin POST requests were limited to forms
+* CORS needs to ensure that these assumptions stay true (or countless legacy servers become vulnerable)
+
+### Protecting legacy servers
+* not providing CORS headers
+
+### Simple and non-simple requests
+* simple requests: requests that were already possible
+* non-simple requests: add new capabilities
+  * protection is needed before the operation occurs
+  * preflight request
+  * ...
+
+Flow of a preflight request:
+* load page
+* send OPTIONS request
+
+Preflight configuration options:
+* preflight request asks for permission
+  * based on the data that will be sent with the actual request
+* CORS preflight request headers
+  * ...
+* CORS preflight response headers
+  * ...
+
+Preflight requests in practice
+* server configuration
+  * ...
+* ...
+
+Compatibility:
+* supported by all modern Web browsers
+* supported by many server-side frameworks
+* many publicly available APIs are CORS-enabled
+
+### CORS beyond XHR
+...
+
+```
+var img = new Image();
+img.crossOrigin = "Anonymous"; // or use-credentials
+img.src = "http://...";
+```
+
+## Conclusion
+* SPAs differ from traditional apps
+  * much more responsibility
+  * take a lot of the burden from the developer
+  * ...
+
+...
