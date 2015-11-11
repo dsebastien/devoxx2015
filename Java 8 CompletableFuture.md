@@ -2,6 +2,7 @@
 
 ## Links
 * to check: ForkJoinPool
+* slides: https://t.co/agPgnAR9zY
 
 ## Asynchronous
 
